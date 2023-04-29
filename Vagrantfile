@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 PHPVERSION = '7.3'
 httpport = 80
-PROJECTID = 'ignition_go'
+PROJECTID = 'ignitionGo'
 DOCROOT = '/var/www/html'
 
 Vagrant.configure("2") do |config|
@@ -58,14 +58,15 @@ SCRIPT
   config.vm.define "2023" do|debian|
     debian.vm.provision :shell, inline: $RampUP
     debian.vm.provision :shell, inline: $LNMPInstall, privileged: false
-    debian.vm.provision :shell, inline: '''
+    debian.vm.provision :shell, inline: <<-SHELL
       curl -Ss https://getcomposer.org/installer | php
       sudo mv composer.phar /usr/bin/composer
       composer -V
       sudo usermod -aG www-data vagrant
-      echo -e "cd #{DOCROOT}" | tee -a /home/vagrant/.bash_profile > /dev/null 2>&1
-      echo "set mouse-=a" >> /home/vagrant/.vimrc
-    ''', privileged: false
+      echo -e "cd #{DOCROOT}" | tee -a ~/.bash_profile > /dev/null 2>&1
+      echo -e "alias ll='ls \$LS_OPTIONS -l'" | tee -a ~/.bashrc > /dev/null 2>&1
+      echo "set mouse-=a" | tee -a ~/.vimrc
+    SHELL
     debian.vm.provision :shell, inline: $nodejsInstall
     debian.vm.provision :shell, path: "vagrantfiles/mariadb-10.5.sh"
     debian.vm.provision :shell, path: "vagrantfiles/fpm-dev.sh", privileged: false, env: {"DOCROOT" => "/var/www/html", "sshUsername" => "vagrant" }
@@ -88,10 +89,8 @@ SCRIPT
     debian.vm.provision :shell, inline: """
       { sudo nginx -t; } && { sudo systemctl restart nginx; sudo systemctl restart php#{PHPVERSION}-fpm; }
       sudo npm install -g bower
-      cd /var/www/html/#{PROJECTID}/
-      yarn install
-      bower install
-      echo '*** http://localhost/#{PROJECTID}/install/init 進行安裝'
+      # cd /var/www/html/#{PROJECTID}/
+      # bower install
     """, privileged: false
     # { sudo nginx -t; } && { sudo systemctl restart nginx; sudo systemctl restart php7.3-fpm; }
     # Patch 標準的 Codeigniter 3.1.13, 把 Ignition-Go 內的 3.1.9 升級.
@@ -100,5 +99,25 @@ SCRIPT
       patch -p0 < ~/Codeigniter3-Patch-IGO-diff.patch
       cp -r /var/www/html/ci3/system /var/www/html/#{PROJECTID}/igocore/system
     """, privileged: false  
+
+    # 修 frontend 的 路徑 bug 及 
+    # 修 gulp - primordials is not defined 問題, 實測 nodejs v14 成功.
+    # ref: https://bobbyhadz.com/blog/referenceerror-primordials-is-not-defined (降nodejs 或 升 gulp?)
+    debian.vm.provision :shell, privileged: false, inline: <<-SHELL
+      # 1. 修 frontend 的 路徑 bug. (修完, gulp 要更新)
+      cp -r /vagrant/_patch/public/assets/js/frontend.js /var/www/html/#{PROJECTID}/public/assets/js/frontend.js
+      sudo npm install -g gulp-cli
+      # 2. 清舊的 node_modules
+      rm -rf /var/www/html/#{PROJECTID}/node_modules
+      # cp /vagrant/_patch/gulp_package.json /var/www/html/#{PROJECTID}/package.json  # OR 用 jq 修改 package.json 加 resolutions 給 yarn 用.
+      cd /var/www/html/#{PROJECTID}
+      cat package.json | jq '.resolutions += { "graceful-fs": "^4.2.11" }' | tee -i package.json
+      npm install --save-dev gulp
+      gulp -v
+      yarn install
+      bower install
+      gulp build
+      echo '*** http://localhost/#{PROJECTID}/install/init 進行安裝'
+    SHELL
   end
 end

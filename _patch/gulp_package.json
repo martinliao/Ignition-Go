@@ -1,0 +1,46 @@
+{
+  "resolutions": {
+    "graceful-fs": "^4.2.11"
+  },
+  "name": "ignitionGo",
+  "version": "1.0.0",
+  "description": "Codeigniter Modular App Building Framework - create and reuse 'blox'",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "https://github.com/ci-blox/ignition-go",
+  "author": "boblennes",
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "*",
+    "del": "*",
+    "gulp": "^3.9.1",
+    "gulp-changed": "*",
+    "gulp-clean-css": "*",
+    "gulp-concat": "*",
+    "gulp-connect-php": "*",
+    "gulp-notify": "*",
+    "gulp-rename": "*",
+    "gulp-sequence": "*",
+    "gulp-sourcemaps": "*",
+    "gulp-uglify": "*",
+    "gulp-watch": "*",
+    "lodash": "*",
+    "minimatch": ">=3.0.2",
+    "require-dir": "*"
+  },
+  "main": "index.php",
+  "private": false,
+  "dependencies": {
+    "admin-lte": "^3.0.5",
+    "bootstrap": ">=4.4.1",
+    "font-awesome": "^4.7.0",
+    "ionicons": "^3.0.0",
+    "jquery": "^3.5.0",
+    "jquery-powertip": "^1.3.1",
+    "jquery-slimscroll": "^1.3.8",
+    "natives": "^1.1.6",
+    "popper.js": "^1.16.1",
+    "sortablejs": "^1.7.0"
+  }
+}
