@@ -1,0 +1,92 @@
+Index: system/core/CodeIgniter.php
+===================================================================
+--- system/core/CodeIgniter.php	(nonexistent)
++++ system/core/CodeIgniter.php	(working copy)
+@@ -403,13 +403,18 @@ if ( ! is_php('5.4'))
+ 	$class = ucfirst($RTR->class);
+ 	$method = $RTR->method;
+ 
+-	if (empty($class) OR ! file_exists(APPPATH.'controllers/'.$RTR->directory.$class.'.php'))
++	//if (empty($class) OR ! file_exists(APPPATH.'controllers/'.$RTR->directory.$class.'.php'))
++	if (empty($class))
+ 	{
+ 		$e404 = TRUE;
+ 	}
+ 	else
+ 	{
+-		require_once(APPPATH.'controllers/'.$RTR->directory.$class.'.php');
++		if (file_exists(APPPATH.'controllers/'.$RTR->directory.$class.'.php')) {
++			require_once(APPPATH.'controllers/'.$RTR->directory.$class.'.php');
++		} elseif (file_exists(IGOPATH . 'controllers/' . $RTR->directory . $class . '.php')) {
++            require_once(IGOPATH . 'controllers/' . $RTR->directory . $class . '.php');
++        }
+ 
+ 		if ( ! class_exists($class, FALSE) OR $method[0] === '_' OR method_exists('CI_Controller', $method))
+ 		{
+@@ -435,7 +440,8 @@ if ( ! is_php('5.4'))
+ 		 * ReflectionMethod::isConstructor() is the ONLY reliable check,
+ 		 * knowing which method will be executed as a constructor.
+ 		 */
+-		else
++		//else
++		elseif ( ! is_callable(array($class, $method)))
+ 		{
+ 			$reflection = new ReflectionMethod($class, $method);
+ 			if ( ! $reflection->isPublic() OR $reflection->isConstructor())
+Index: system/core/Common.php
+===================================================================
+--- system/core/Common.php	(nonexistent)
++++ system/core/Common.php	(working copy)
+@@ -153,7 +153,8 @@ if ( ! function_exists('load_class'))
+ 
+ 		// Look for the class first in the local application/libraries folder
+ 		// then in the native system/libraries folder
+-		foreach (array(APPPATH, BASEPATH) as $path)
++		//foreach (array(APPPATH, BASEPATH) as $path)
++		foreach (array(APPPATH, IGOPATH, BASEPATH) as $path)
+ 		{
+ 			if (file_exists($path.$directory.'/'.$class.'.php'))
+ 			{
+@@ -168,6 +169,16 @@ if ( ! function_exists('load_class'))
+ 			}
+ 		}
+ 
++		// Is class extension in IGO core?
++        if (file_exists(IGOPATH . $directory . '/IGO_' . $class . '.php'))
++        {
++            $name = 'IGO_' . $class;
++            if (class_exists($name, FALSE) === FALSE)
++            {
++                require_once(IGOPATH . $directory . '/' . $name . '.php');
++			}
++		}
++
+ 		// Is the request a class extension? If so we load it too
+ 		if (file_exists(APPPATH.$directory.'/'.config_item('subclass_prefix').$class.'.php'))
+ 		{
+Index: system/core/Loader.php
+===================================================================
+--- system/core/Loader.php	(nonexistent)
++++ system/core/Loader.php	(working copy)
+@@ -310,6 +310,7 @@ class CI_Loader {
+ 			elseif ( ! class_exists('CI_Model', FALSE))
+ 			{
+ 				require_once(BASEPATH.'core'.DIRECTORY_SEPARATOR.'Model.php');
++				require_once(IGOPATH.'core'.DIRECTORY_SEPARATOR.'IGO_Model.php');
+ 			}
+ 
+ 			$class = config_item('subclass_prefix').'Model';
+@@ -617,6 +618,13 @@ class CI_Loader {
+ 				}
+ 			}
+ 
++			// Look for IGO helper extension.
++            if (file_exists(IGOPATH . "helpers/IGO_{$helper}.php"))
++            {
++                include_once(IGOPATH . "helpers/IGO_{$helper}.php");
++                $ext_loaded = TRUE;
++            }
++
+ 			// If we have loaded extensions - check if the base one is here
+ 			if ($ext_loaded === TRUE)
+ 			{

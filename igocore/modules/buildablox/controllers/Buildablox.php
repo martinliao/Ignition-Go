@@ -87,6 +87,7 @@ class Buildablox extends Admin_Controller
         }
 
         // Check that the modules folder is writable
+//debugBreak();
         Template::set('writable', $this->checkWritable());
         Template::set('modules', $configs);
         //Template::set('toolbar_title', lang('mb_toolbar_title_index'));

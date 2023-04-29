@@ -8,6 +8,22 @@ A Modular (HMVC) App Building Framework - complete with front end, REST api, and
 - can be used as a quickstart project starter/boilerplate
 - *What are blox?* "Blox" are just pluggable modules or applets that are commonly used in web applications. Ignition Go includes a web-based generator (see BuildABlox). Planned example "blox" would be a bulk emailer, report manager, and many more!!!  
 
+
+
+## Features特徵
+
+* 它只把 Public公開(資安?) 
+* 有 Cli
+* 有 Install/init, 會檢查必要條件, 及資料庫安裝.
+* Nginx virtualhost 要設定 
+    ```
+    alias /var/www/html/ignition_go/public;
+    ```
+* 支援 HMVC, 還有自己的 blox
+* 還有 API (REST API), API_Controller...
+* Template, 是一個重要的擴充, 應該值得研究.
+
+
 ### Documentation
 Documentation is now available: [Ignition-Go Documentation on GitHub] (http://ci-blox.github.io/Ignition-Go/#/concepts/ACL)
 Take a look at the key concepts documents and also see the /docs folder for more.

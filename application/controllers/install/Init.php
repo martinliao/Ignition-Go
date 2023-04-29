@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class Init extends MX_Controller
 {
@@ -9,14 +9,12 @@ class Init extends MX_Controller
 		parent::__construct();
 		$this->load->helper('application');
 		$this->load->helper('form');
-        $this->load->library('settings');
-        $this->load->library('events');
-       $this->load->library('securinator/Auth');
+		$this->load->library('settings');
+		$this->load->library('events');
+		$this->load->library('securinator/Auth');
 
-        $this->lang->load('users/users');
-        
-
-}
+		$this->lang->load('users/users');
+	}
 
 	public function index()
 	{
@@ -25,31 +23,31 @@ class Init extends MX_Controller
 		$debug = '';
 		$step = 1;
 		$passed_steps = array(
-				1=>false,
-				2=>false,
-				3=>false,
-			);
-		if($this->input->post()){
+			1 => false,
+			2 => false,
+			3 => false,
+		);
+		if ($this->input->post()) {
 
-			if($this->input->post('step') && $this->input->post('step') == 2){
+			if ($this->input->post('step') && $this->input->post('step') == 2) {
 
-				if(isset($_POST['skip']) && $this->input->post('skip') == '1'){
+				if (isset($_POST['skip']) && $this->input->post('skip') == '1') {
 					$passed_steps[1] = true;
 					$passed_steps[2] = true;
 					$step = 3;
 				} else {
-					if($this->input->post('hostname') == ''){
+					if ($this->input->post('hostname') == '') {
 						$this->error = 'Hostname is required';
 					} else if ($this->input->post('database') == '') {
 						$this->error = 'Enter database name';
-					} else if($this->input->post('password') == '' && strpos(site_url(),'localhost') === false){
+					} else if ($this->input->post('password') == '' && strpos(site_url(), 'localhost') === false) {
 						$this->error = 'Enter database password';
-					} else if ($this->input->post('username') == ''){
+					} else if ($this->input->post('username') == '') {
 						$this->error = 'Enter database username';
 					}
 					$step = 2;
 					$passed_steps[1] = true;
-					if($this->error === ''){
+					if ($this->error === '') {
 						$passed_steps[2] = true;
 						$link = @mysqli_connect($this->input->post('hostname'), $this->input->post('username'), $this->input->post('password'), $this->input->post('database'));
 						if (!$link) {
@@ -57,51 +55,50 @@ class Init extends MX_Controller
 							$this->error .= "Errno: " . mysqli_connect_errno() . PHP_EOL;
 							$this->error .= "Error: " . mysqli_connect_error() . PHP_EOL;
 						} else {
-							$debug .= "Success: A proper connection to MySQL using MySQLi was made! The ".$this->input->post('database')." database is great." . PHP_EOL;
+							$debug .= "Success: A proper connection to MySQL using MySQLi was made! The " . $this->input->post('database') . " database is great." . PHP_EOL;
 							$debug .= "Host information: " . mysqli_get_host_info($link) . PHP_EOL;
-							if($this->write_db_config()){
+							if ($this->write_db_config()) {
 								$step = 3;
 							}
 							mysqli_close($link);
 						}
 					}
 				}
-			} else if($this->input->post('step') && $this->input->post('step') == 3){
-				if($this->input->post('admin_email') == ''){
+			} else if ($this->input->post('step') && $this->input->post('step') == 3) {
+				if ($this->input->post('admin_email') == '') {
 					$this->error = 'Enter admin email address';
 				} else if (filter_var($this->input->post('admin_email'), FILTER_VALIDATE_EMAIL) === false) {
 					$this->error = 'Enter valid email address';
-				} else if($this->input->post('admin_password') == ''){
+				} else if ($this->input->post('admin_password') == '') {
 					$this->error = 'Enter admin password';
-				} else if ($this->input->post('admin_password') != $this->input->post('admin_passwordr')){
+				} else if ($this->input->post('admin_password') != $this->input->post('admin_passwordr')) {
 					$this->error = 'Your password not match';
 				}
 				$passed_steps[1] = true;
 				$passed_steps[2] = true;
 				$step = 3;
-			} else if($this->input->post('requirements_success')) {
+			} else if ($this->input->post('requirements_success')) {
 				$step = 2;
 				$passed_steps[1] = true;
 			}
 
-			if($this->error === '' && $this->input->post('step') && $this->input->post('step') == 3){
+			if ($this->error === '' && $this->input->post('step') && $this->input->post('step') == 3) {
 				$dbsql = file_get_contents(APPPATH . '../sql/install.sql');
 				$dbsqlar = explode(";", $dbsql);
 				$this->load->database();
 				$this->load->model('users/user_model');
 				$this->db->trans_start();
 				foreach ($dbsqlar as $key => $dbsqlstep) {
-					if ( ! $this->db->simple_query($dbsqlstep))
-					{
+					if (!$this->db->simple_query($dbsqlstep)) {
 						$dberror = $this->db->error(); // Has keys 'code' and 'message'
-						show_error($error." SQL step:".$dbsqlstep); 
-						$this->error = "Problem in install sql: ".print_r($dberror, true);
+						show_error($error . " SQL step:" . $dbsqlstep);
+						$this->error = "Problem in install sql: " . print_r($dberror, true);
 						return;
 					}
 				}
 				//if(mysqli_multi_query($this->db->conn_id, $dbsql)){
 				//	$this->clean_up_db_query();
-				
+
 				// insert an admin
 				$data['password'] = $this->input->post('admin_passwordr');
 				$data['username'] = $this->input->post('admin_email');
@@ -112,13 +109,12 @@ class Init extends MX_Controller
 				$data['first_name'] = 'Site';
 				$data['last_name'] = 'Admin';
 
-				if($this->user_model->insert($data)){
-					if (!is_really_writable($config_path))
-					{
-						show_error($config_path.' should be writable. Database imported successfuly. And admin user added successfuly. You can set manualy in application/config at bottom $config["installed"]  = "true"');
+				if ($this->user_model->insert($data)) {
+					if (!is_really_writable($config_path)) {
+						show_error($config_path . ' should be writable. Database imported successfuly. And admin user added successfuly. You can set manualy in application/config at bottom $config["installed"]  = "true"');
 					}
 					$this->db->trans_complete();
-	
+
 					//update_config_installed();
 					$passed_steps[1] = true;
 					$passed_steps[2] = true;
@@ -134,15 +130,17 @@ class Init extends MX_Controller
 		include_once(APPPATH . 'controllers/install/_html.php');
 	}
 
-	public function delete_install_dir(){
-		if(is_dir(APPPATH . 'controllers/install')){
-	        $this->load->library('ftp');// use for delete_dir
-            if($this->ftp->delete_dir(APPPATH . 'controllers/install')){
-			redirect(base_url());
+	public function delete_install_dir()
+	{
+		if (is_dir(APPPATH . 'controllers/install')) {
+			$this->load->library('ftp'); // use for delete_dir
+			if ($this->ftp->delete_dir(APPPATH . 'controllers/install')) {
+				redirect(base_url());
 			}
 		}
 	}
-	private function clean_up_db_query() {
+	private function clean_up_db_query()
+	{
 		$CI = &get_instance();
 		while (mysqli_more_results($CI->db->conn_id) && mysqli_next_result($CI->db->conn_id)) {
 
@@ -153,15 +151,16 @@ class Init extends MX_Controller
 			}
 		}
 	}
-	private function write_db_config(){
+	private function write_db_config()
+	{
 
-			    $hostname = $this->input->post('hostname');
-				$database = $this->input->post('database');
-				$username = $this->input->post('username');
-				$password = $this->input->post('password');
+		$hostname = $this->input->post('hostname');
+		$database = $this->input->post('database');
+		$username = $this->input->post('username');
+		$password = $this->input->post('password');
 
 
-	$new_database_file = '<?php defined(\'BASEPATH\') OR exit(\'No direct script access allowed\');
+		$new_database_file = '<?php defined(\'BASEPATH\') OR exit(\'No direct script access allowed\');
 
 /*
 | -------------------------------------------------------------------
@@ -237,10 +236,10 @@ $query_builder = TRUE;
 
 $db[\'default\'] = array(
 	\'dsn\'	=> \'\',
-	\'hostname\' => \''.$hostname.'\',
-	\'username\' => \''.$username.'\',
-	\'password\' => \''.$password.'\',
-	\'database\' => \''.$database.'\',
+	\'hostname\' => \'' . $hostname . '\',
+	\'username\' => \'' . $username . '\',
+	\'password\' => \'' . $password . '\',
+	\'database\' => \'' . $database . '\',
 	\'dbdriver\' => \'mysqli\',
 	\'dbprefix\' => \'igo_\',
 	\'pconnect\' => FALSE,
@@ -258,16 +257,14 @@ $db[\'default\'] = array(
 );
 ';
 
-$fp = fopen(APPPATH . 'config/database.php','w+');
-if($fp)
-{
-	if(fwrite($fp,$new_database_file)){
-		return true;
+		$fp = fopen(APPPATH . 'config/database.php', 'w+');
+		if ($fp) {
+			if (fwrite($fp, $new_database_file)) {
+				return true;
+			}
+			fclose($fp);
+		}
+
+		return false;
 	}
-	fclose($fp);
-}
-
-return false;
-}
-
 }
