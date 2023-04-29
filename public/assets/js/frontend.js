@@ -8,11 +8,11 @@ $(document).ready(function() {
 
 /* theme switcher - can be removed if not using in your app */
 var themes = {
-    "default": "./../assets/scss/themeig.css",
-    "flat": "./../assets/scss/themefl.css",
-    "elegant": "./../assets/scss/themeel.css",
-    "neon": "./../assets/scss/themene.css",
-    "aquamarine" : "./../assets/scss/themeaq.css",
+    "default": "assets/scss/themeig.css",
+    "flat": "assets/scss/themefl.css",
+    "elegant": "assets/scss/themeel.css",
+    "neon": "assets/scss/themene.css",
+    "aquamarine" : "assets/scss/themeaq.css",
     /* below are the bs3 themes - to be removed */
     "cerulean" : "//bootswatch.com/cerulean/bootstrap.min.css",
     "cosmo" : "//bootswatch.com/cosmo/bootstrap.min.css",
@@ -33,7 +33,7 @@ var themes = {
 }
 var themesheet;
 $(function(){
-    themesheet = $('<link href="'+themes['default']+'" rel="stylesheet" />');
+    themesheet = $('<link href="<?php echo base_url(); ?>'+themes['default']+'" rel="stylesheet" />');
     themesheet.appendTo('head');
     $('.themelist a').click(function(e){  var themeurl = themes[$(this).attr('data-theme')]; 
         e.preventDefault();

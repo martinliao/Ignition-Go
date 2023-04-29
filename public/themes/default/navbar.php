@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-md bg-primary fixed-top navbar-dark">
   <div class="container">
     <a class="navbar-brand" href="./" title="Igmitipn Go home" id="Navbar index">
-      <img src="../../assets/img/logo-nav.png"" class="d-inline-block" alt="I Go logo" style="padding-bottom: 5px;" width="24"><b> Ignition Go</b></a>
+      <img src="<?php echo base_url(); ?>assets/img/logo-nav.png" class="d-inline-block" alt="I Go logo" style="padding-bottom: 5px;" width="24"><b> Ignition Go</b></a>
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar2SupportedContent"
        aria-controls="navbar2SupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span> </button>
